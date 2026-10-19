@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pulsar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #07090d; --bg-2: #0e131b; --panel: #121821;
+      --line: rgba(232, 184, 109, .18); --text: #e8edf4; --muted: #8b97a8;
+      --gold: #e8b86d; --green: #7dffb3; --red: #ff7a7a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #07090d; color: var(--text);
+      font-family: "IBM Plex Sans", sans-serif; }
+    body { background: radial-gradient(1200px 500px at 10% -10%, #1a1408 0%, #07090d 45%); }
+    header { display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 24px; border-bottom: 1px solid var(--line); gap: 12px; flex-wrap: wrap; }
+    .brand { font-family: "IBM Plex Mono", monospace; color: var(--gold); letter-spacing: .28em; }
+    .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--green); color: var(--green); padding: 4px 10px;
+      border-radius: 999px; font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+    .pill.bad { border-color: var(--red); color: var(--red); }
+    .banner { margin: 16px; padding: 12px; border: 1px solid var(--red); color: var(--red); }
+    .grid { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; min-height: calc(100vh - 88px); }
+    .chat { border-right: 1px solid var(--line); display: flex; flex-direction: column; background: var(--bg-2); }
+    .title { padding: 14px 16px; color: var(--gold); font-family: "IBM Plex Mono", monospace;
+      letter-spacing: .14em; font-size: 12px; }
+    .log { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .user, .bot { padding: 12px; border-radius: 12px; max-width: 92%; }
+    .user { align-self: flex-end; background: #1c2430; }
+    .bot { align-self: flex-start; background: #16120c; border: 1px solid var(--line); }
+    .tool { color: var(--gold); font-size: 11px; font-family: "IBM Plex Mono", monospace; margin-bottom: 6px; }
+    pre { margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 14px; }
+    form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
+    input { flex: 1; background: #0b0f14; border: 1px solid var(--line); padding: 10px 12px;
+      border-radius: 8px; color: inherit; }
+    button { background: var(--gold); color: #111; border: 0; padding: 10px 16px; border-radius: 8px; font-weight: 600; }
+    .dash { padding: 20px; overflow: auto; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .card { background: var(--panel); border: 1px solid var(--line); padding: 14px; border-radius: 12px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .big { font-family: "IBM Plex Mono", monospace; font-size: 22px; margin: 6px 0; }
+    h2 { font-size: 13px; letter-spacing: .12em; color: var(--gold); margin: 22px 0 8px;
+      font-family: "IBM Plex Mono", monospace; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1b2230; vertical-align: top; }
+    th { color: var(--muted); font-weight: 500; font-size: 12px; }
+    .audit { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+    .audit div { padding: 4px 0; border-bottom: 1px solid #1b2230; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .chat { min-height: 50vh; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="brand">PULSAR</div>
+      <div class="sub">RSI-gated agent · paper by default · not financial advice</div>
+    </div>
+    <div class="pills" id="pills"></div>
+  </header>
+  <div id="banner"></div>
+  <div class="grid">
+    <aside class="chat">
+      <div class="title">对话</div>
+      <div class="log" id="log"></div>
+      <form id="form">
+        <input id="draft" placeholder="开始研究 / 为什么没晋升 / 停机" autocomplete="off" />
+        <button type="submit">发送</button>
+      </form>
+    </aside>
+    <section class="dash">
+      <div class="title">监控与审计</div>
+      <div class="cards" id="cards"></div>
+      <h2>晋升榜</h2>
+      <table><thead><tr><th>因子</th><th>状态</th><th>原因</th></tr></thead><tbody id="board"></tbody></table>
+      <h2>持仓</h2>
+      <table><thead><tr><th>市场</th><th>标的</th><th>数量</th><th>均价</th></tr></thead><tbody id="pos"></tbody></table>
+      <h2>门控指标</h2>
+      <table><thead><tr><th>因子</th><th>市场</th><th>Sharpe</th><th>超额</th><th>过门</th></tr></thead><tbody id="evals"></tbody></table>
+      <h2>审计</h2>
+      <div class="audit" id="audit"></div>
+    </section>
+  </div>
+  <script>
+    const API = "";
+    const log = document.getElementById("log");
+    function add(role, text, tool) {
+      const el = document.createElement("div");
+      el.className = role;
+      el.innerHTML = (tool ? `<div class="tool">${tool}</div>` : "") + `<pre></pre>`;
+      el.querySelector("pre").textContent = text;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+    }
+    add("bot", "Pulsar 默认纸交易。问我「开始研究」「为什么没晋升」「风控」或「停机」。主网不会从聊天打开。");
+
+    async function refresh() {
+      try {
+        const ov = await (await fetch(API + "/v1/overview")).json();
+        document.getElementById("banner").innerHTML = "";
+        const pills = document.getElementById("pills");
+        const liveOn = !!ov.live_enabled;
+        const killed = !!(ov.kill && ov.kill.tripped);
+        pills.innerHTML = "";
+        [["LIVE " + (liveOn ? "ON" : "OFF"), !liveOn],
+         [killed ? ("KILL " + (ov.kill.reason || "")) : "KILL ARMED", !killed],
+         [(ov.decision_backend || "rules").toUpperCase(), true]
+        ].forEach(([label, ok]) => {
+          const s = document.createElement("span");
+          s.className = "pill" + (ok ? "" : " bad");
+          s.textContent = label;
+          pills.appendChild(s);
+        });
+        const cards = document.getElementById("cards");
+        cards.innerHTML = (ov.accounts || []).map(a =>
+          `<article class="card"><div class="muted">${a.market_id}</div>
+           <div class="big">${Number(a.equity).toFixed(2)}</div>
+           <div class="muted">${a.mode} · cash ${Number(a.cash).toFixed(2)}</div></article>`
+        ).join("");
+        const board = ov.board || [];
+        document.getElementById("board").innerHTML = board.length ? board.map(r =>
+          `<tr><td><code>${r.factor_id}</code><div class="muted">${r.name || ""}</div></td>
+           <td style="color:${r.state === "paper" ? "var(--green)" : r.state === "rejected" ? "var(--red)" : "var(--gold)"}">${r.state}</td>
+           <td class="muted">${r.reason || ""}</td></tr>`
+        ).join("") : `<tr><td colspan="3" class="muted">还没有研究循环。在左侧说「开始研究」。</td></tr>`;
+        const pos = ov.positions || [];
+        document.getElementById("pos").innerHTML = pos.length ? pos.map(p =>
+          `<tr><td>${p.market_id}</td><td>${p.symbol}</td><td>${p.quantity}</td><td>${Number(p.avg_price).toFixed(4)}</td></tr>`
+        ).join("") : `<tr><td colspan="4" class="muted">空仓</td></tr>`;
+        const evals = (ov.evaluations || []).slice(0, 12);
+        document.getElementById("evals").innerHTML = evals.map(row => {
+          let m = {};
+          try { m = typeof row.metrics === "string" ? JSON.parse(row.metrics) : (row.metrics || {}); } catch (e) {}
+          return `<tr><td><code>${row.factor_id}</code></td><td>${row.market_id}/${row.symbol}</td>
+            <td>${Number(m.sharpe || 0).toFixed(2)}</td><td>${Number(m.excess_sharpe || 0).toFixed(2)}</td>
+            <td style="color:${row.passed ? "var(--green)" : "var(--red)"}">${row.passed ? "yes" : "no"}</td></tr>`;
+        }).join("");
+        document.getElementById("audit").innerHTML = (ov.audit || []).slice(0, 12).map(r =>
+          `<div><span class="muted">${r.ts}</span> ${r.actor} ${r.action}</div>`
+        ).join("");
+      } catch (err) {
+        document.getElementById("banner").innerHTML = `<div class="banner">API ${err}. 运行 pulsar serve</div>`;
+      }
+    }
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("draft");
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      add("user", text);
+      try {
+        const data = await (await fetch(API + "/v1/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        })).json();
+        add("bot", data.reply || JSON.stringify(data), data.tool);
+        await refresh();
+      } catch (err) {
+        add("bot", String(err));
+      }
+    });
+    refresh();
+    setInterval(refresh, 8000);
+  </script>
+</body>
+</html>

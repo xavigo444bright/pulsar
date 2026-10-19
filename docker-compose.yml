@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      PULSAR_LIVE: "false"
+      PULSAR_LIVE_CONFIRM: ""
+      PULSAR_DB_PATH: /app/data/pulsar.db
+      PULSAR_DATA_DIR: /app/data
+    volumes:
+      - pulsar-data:/app/data
+
+volumes:
+  pulsar-data:

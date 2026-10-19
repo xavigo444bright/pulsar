@@ -1,0 +1,26 @@
+:root {
+  --bg: #07090d;
+  --bg-2: #0e131b;
+  --panel: #121821;
+  --line: rgba(232, 184, 109, 0.18);
+  --text: #e8edf4;
+  --muted: #8b97a8;
+  --gold: #e8b86d;
+  --green: #7dffb3;
+  --red: #ff7a7a;
+  --blue: #79c7ff;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); }
+body {
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+}
+button, input, textarea { font: inherit; color: inherit; }
+a { color: var(--gold); }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #1b2230; vertical-align: top; }
+th { color: #8b97a8; font-weight: 500; font-size: 12px; }
+@media (max-width: 900px) {
+  main section[style] { grid-template-columns: 1fr !important; }
+}

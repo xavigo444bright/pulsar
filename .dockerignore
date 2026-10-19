@@ -1,0 +1,8 @@
+.venv
+venv
+.git
+apps/web/node_modules
+apps/web/.next
+data/*.db
+__pycache__
+.pytest_cache
